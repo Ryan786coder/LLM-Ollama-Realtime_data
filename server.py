@@ -4,7 +4,9 @@ import re
 from typing import List
 
 
+
 client = Client(host="http://localhost:11434")
+
 
 
 def get_weather(city: str):
@@ -42,29 +44,47 @@ def get_weather(city: str):
 
 
 def fetch_place_names(text: str):
-    places = ["Guwahati","Japan", "Mumbai"]
+    #places = ["Guwahati","Japan", "Mumbai"]
     res = []
     
     for match in text.split(' '):
-        for pl in places:
-            if match == pl:
+        #for pl in places:
+            #if match == pl:
                 res.append(match)
     
     return res
    
         
+def llm_fetching(text: str):
+    SYSTEM_PROMPT= f"""
+        Out of all words select only places name like city,state,country from {text}
+    """
+    resp = client.chat(
+        model="gemma:2b",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT}
+        ]
+    )
     
+    return resp.message.content
 
 while True:
-    user_input = input("Hi, How can I help you?\n")
+
+    user_input = input("\n\nHi, How can I help you?\n")
 
     if user_input.lower() == "exit":
         break
 
-    filtered_user_input = fetch_place_names(user_input)
-    
+    filtered_ = fetch_place_names(user_input)
+
+    print("\n\nSplitting ",filtered_,"\n\n")
+
+    filtered_user_input = llm_fetching(filtered_)
+
+    print("\n\nPlaces  ",filtered_user_input,"\n\n")
+
     #for list_input in filtered_user_input:
-       
+        
     weather_report = get_weather(filtered_user_input)
 
     response = client.chat(
